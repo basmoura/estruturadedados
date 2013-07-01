@@ -1,0 +1,377 @@
+package lista02_02_SkipList;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Comparator;
+import utilitarios.*;
+
+public class Demo {
+
+    static ListaEncOrd<Pessoa> leoPessoas = new ListaEncOrd<>();
+    static HashMapa<Integer, SkipList<Pessoa>> hmIdadePessoas = new HashMapa<>(10);
+    static HashMapa<Float, SkipList<Pessoa>> hmSalPessoas = new HashMapa<>(10);
+
+    static class ComparaNomes implements Comparator<Pessoa> {
+
+        @Override
+        public int compare(Pessoa o1, Pessoa o2) {
+            return o1.getNomePessoa().compareToIgnoreCase(o2.getNomePessoa());
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            FileReader arq = new FileReader("pessoas.txt");
+            BufferedReader lerArq = new BufferedReader(arq);
+
+            String linha = lerArq.readLine();
+
+            while (linha != null) {
+                int codigo = Integer.parseInt(linha.substring(0, 8).trim());
+                String nome = linha.substring(8, 38).trim();
+                int idade = Integer.parseInt(linha.substring(38, 41).trim());
+                float salario = Float.parseFloat(linha.substring(41, 51).replace(",", ".").trim());
+
+                incluirPessoa(codigo, nome, idade, salario);
+                linha = lerArq.readLine();
+            }
+
+            arq.close();
+        } catch (IOException e) {
+            System.err.printf("Erro na abertura do arquivo: %s.\n",
+                    e.getMessage());
+        }
+
+        int opcao;
+        do {
+            Keyboard.clrscr();
+            opcao = Keyboard.menu("Incluir Pessoa/Excluir Pessoa/Consultar por c�digo/Listar por c�digo/Listar em ordem alfab�tica/"
+                    + "Listar por idade/Listar por sal�rio/Terminar");
+            switch (opcao) {
+                case 1:
+                    incluirPessoa();
+                    break;
+                case 2:
+                    excluirPessoa();
+                    break;
+                case 3:
+                    consultarPorCodigo();
+                    break;
+                case 4:
+                    listarPorCodigo();
+                    break;
+                case 5:
+                    listarEmOrdemAlfabetica();
+                    break;
+                case 6:
+                    listarPorIdade();
+                    break;
+                case 7:
+                    listarPorSalarioAsc();
+                    break;
+            }
+        } while (opcao < 8);
+        System.out.println("\nFim do programa");
+    }
+
+    //Este metodo lista por sal�rio e em ordem Ascendente
+    private static void listarPorSalarioAsc() {
+        Keyboard.clrscr();
+        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+        System.out.println("------  ------------------------------  -----  ----------");
+        ListaEncOrd<Float> listaTemp = new ListaEncOrd<>();
+        MyIteratorMapa<Float, SkipList<Pessoa>> it = hmSalPessoas.iterator();
+        ChaveValor<Float, SkipList<Pessoa>> pessoas = it.getFirst();
+        while (pessoas != null) {
+            listaTemp.add(pessoas.getChave());
+            pessoas = it.getNext();
+        }
+        if (!listaTemp.isEmpty()) {
+            Object[] chaves = listaTemp.toArray();
+            for (int i = 0; i < chaves.length; i++) {
+                MyIterator<Pessoa> itSkip = hmSalPessoas.getValor((Float) chaves[i]).iterator();
+                Pessoa pessoa = itSkip.getFirst();
+                int count = 0;
+                while (pessoa != null) {
+                    System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                            pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+                            pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+                    if (count == 20) {
+                        Keyboard.waitEnter();
+                        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+                        System.out.println("------  ------------------------------  -----  ----------");
+                        count = 0;
+                    }
+                    pessoa = itSkip.getNext();
+                    count++;
+                }
+            }
+        }
+        Keyboard.waitEnter();
+    }
+
+    //Este metodo est� listando por sal�rio, mas n�o lista em ordem Ascendente
+    private static void listarPorSalario() {
+        Keyboard.clrscr();
+        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+        System.out.println("------  ------------------------------  -----  ----------");
+        MyIteratorMapa<Float, SkipList<Pessoa>> it = hmSalPessoas.iterator();
+        ChaveValor<Float, SkipList<Pessoa>> pessoas = it.getFirst();
+        while (pessoas != null) {
+            MyIterator<Pessoa> itSkip = pessoas.getValor().iterator();
+            Pessoa pessoa = itSkip.getFirst();
+            int count = 0;
+            while (pessoa != null) {
+                System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                        pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+                        pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+                if (count == 20) {
+                    Keyboard.waitEnter();
+                    System.out.println("Codigo  Nome                            Idade  Sal�rio");
+                    System.out.println("------  ------------------------------  -----  ----------");
+                    count = 0;
+                }
+                pessoa = itSkip.getNext();
+                count++;
+            }
+            pessoas = it.getNext();
+
+        }
+        Keyboard.waitEnter();
+    }
+
+    //Este metodo lista por idade e em ordem Ascendente
+    private static void listarPorIdadeAsc() {
+        Keyboard.clrscr();
+        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+        System.out.println("------  ------------------------------  -----  ----------");
+        ListaEncOrd<Integer> listaTemp = new ListaEncOrd<>();
+        MyIteratorMapa<Integer, SkipList<Pessoa>> it = hmIdadePessoas.iterator();
+        ChaveValor<Integer, SkipList<Pessoa>> pessoas = it.getFirst();
+        while (pessoas != null) {
+            listaTemp.add(pessoas.getChave());
+            pessoas = it.getNext();
+        }
+        if (!listaTemp.isEmpty()) {
+            Object[] chaves = listaTemp.toArray();
+            for (int i = 0; i < chaves.length; i++) {
+                MyIterator<Pessoa> itSkip = hmIdadePessoas.getValor((Integer) chaves[i]).iterator();
+                Pessoa pessoa = itSkip.getFirst();
+                int count = 0;
+                while (pessoa != null) {
+                    System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                            pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+                            pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+                    if (count == 20) {
+                        Keyboard.waitEnter();
+                        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+                        System.out.println("------  ------------------------------  -----  ----------");
+                        count = 0;
+                    }
+                    pessoa = itSkip.getNext();
+                    count++;
+                }
+            }
+        }
+        Keyboard.waitEnter();
+    }
+
+    //Este metodo est� listando por idade, mas n�o lista em ordem Ascendente
+    private static void listarPorIdade() {
+        /*
+         Keyboard.clrscr();
+         System.out.println("Codigo  Nome                            Idade  Sal�rio");
+         System.out.println("------  ------------------------------  -----  ----------");
+         MyIteratorMapa<Integer, SkipList<Pessoa>> it = hmIdadePessoas.iterator();
+         ChaveValor<Integer, SkipList<Pessoa>> pessoas = it.getFirst();
+         while (pessoas != null) {
+         MyIterator<Pessoa> itSkip = pessoas.getValor().iterator();		
+         Pessoa pessoa = itSkip.getFirst();
+         int count = 0;
+         while(pessoa != null) {
+         System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+         pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+         pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+         if(count == 20)
+         {
+         Keyboard.waitEnter();
+         System.out.println("Codigo  Nome                            Idade  Sal�rio");
+         System.out.println("------  ------------------------------  -----  ----------");
+         count = 0;
+         }
+         pessoa = itSkip.getNext();
+         count++;
+         }
+         pessoas = it.getNext();			
+         }
+         Keyboard.waitEnter();
+         */
+        Keyboard.clrscr();
+        int idade = Keyboard.readInt("Entrar com a idade");
+        ChaveValor<Integer, SkipList<Pessoa>> cvIdade = hmIdadePessoas.getChaveValor(idade);
+        if (cvIdade == null) {
+            System.out.println("N�o existem pessoas com esta idade");
+            Keyboard.waitEnter();
+        } else {
+            System.out.println("Codigo  Nome                            Idade  Sal�rio");
+            System.out.println("------  ------------------------------  -----  ----------");
+            MyIterator<Pessoa> it = cvIdade.getValor().iterator();
+            Pessoa pessoa = it.getFirst();
+            ListaEncOrd<Pessoa> listaTemp = new ListaEncOrd<Pessoa>();
+            while (pessoa != null) {
+                listaTemp.add(pessoa);
+                pessoa = it.getNext();
+            }
+            Object[] pessoas = listaTemp.toArray();
+            Sort.quickSort(pessoas, new ComparaNomes());
+
+            for (int i = 0; i < pessoas.length; i++) {
+                System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                        ((Pessoa) pessoas[i]).getCodPessoa(),
+                        ((Pessoa) pessoas[i]).getNomePessoa(),
+                        ((Pessoa) pessoas[i]).getIdadePessoa(),
+                        ((Pessoa) pessoas[i]).getSalarioPessoa());
+            }
+            Keyboard.waitEnter();
+        }
+
+    }
+
+    private static void listarEmOrdemAlfabetica() {
+        Keyboard.clrscr();
+        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+        System.out.println("------  ------------------------------  -----  ----------");
+        if (!leoPessoas.isEmpty()) {
+            Object[] pessoas = leoPessoas.toArray();
+            Sort.quickSort(pessoas, new ComparaNomes());
+            int count = 0;
+            for (int i = 0; i < pessoas.length; i++) {
+                System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                        ((Pessoa) pessoas[i]).getCodPessoa(), ((Pessoa) pessoas[i]).getNomePessoa(),
+                        ((Pessoa) pessoas[i]).getIdadePessoa(), ((Pessoa) pessoas[i]).getSalarioPessoa());
+                if (count == 20) {
+                    Keyboard.waitEnter();
+                    System.out.println("Codigo  Nome                            Idade  Sal�rio");
+                    System.out.println("------  ------------------------------  -----  ----------");
+                    count = 0;
+                }
+                count++;
+            }
+        }
+        Keyboard.waitEnter();
+    }
+
+    private static void listarPorCodigo() {
+        Keyboard.clrscr();
+        System.out.println("Codigo  Nome                            Idade  Sal�rio");
+        System.out.println("------  ------------------------------  -----  ----------");
+
+        MyIterator<Pessoa> it = leoPessoas.iterator();
+        Pessoa pessoa = it.getFirst();
+        int count = 0;
+        while (pessoa != null) {
+            System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                    pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+                    pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+            if (count == 20) {
+                Keyboard.waitEnter();
+                System.out.println("Codigo  Nome                            Idade  Sal�rio");
+                System.out.println("------  ------------------------------  -----  ----------");
+                count = 0;
+            }
+            pessoa = it.getNext();
+            count++;
+        }
+        Keyboard.waitEnter();
+    }
+
+    private static void consultarPorCodigo() {
+        Keyboard.clrscr();
+        int codigo = Keyboard.readInt("Entrar com o codigo da pessoa: ");
+        Pessoa pessoa = leoPessoas.retrieve(new Pessoa(codigo));
+
+        if (pessoa != null) {
+            System.out.println("Codigo  Nome                            Idade  Sal�rio");
+            System.out.println("------  ------------------------------  -----  ----------");
+            System.out.printf("%6d  %-30s  %5s  %10.2f\n",
+                    pessoa.getCodPessoa(), pessoa.getNomePessoa(),
+                    pessoa.getIdadePessoa(), pessoa.getSalarioPessoa());
+            Keyboard.waitEnter();
+        } else {
+            System.out.println("Pessoa n�o encontrada");
+            Keyboard.waitEnter();
+        }
+    }
+
+    private static void excluirPessoa() {
+        Keyboard.clrscr();
+        int codigo = Keyboard.readInt("Entrar com o codigo da pessoa: ");
+        Pessoa pessoa = leoPessoas.retrieve(new Pessoa(codigo));
+        if (pessoa != null) {
+            hmIdadePessoas.getChaveValor(pessoa.getIdadePessoa()).getValor().remove(pessoa);
+            hmSalPessoas.getChaveValor(pessoa.getSalarioPessoa()).getValor().remove(pessoa);
+            leoPessoas.remove(pessoa);
+            System.out.println("Pessoa removida com sucesso");
+            Keyboard.waitEnter();
+        } else {
+            System.out.println("Pessoa n�o encontrada");
+            Keyboard.waitEnter();
+        }
+    }
+
+    private static void incluirPessoa() {
+        char resp;
+        Pessoa novaPessoa;
+        do {
+            Keyboard.clrscr();
+            int codigo = Keyboard.readInt("Entrar com o codigo da pessoa: ");
+            if (leoPessoas.contains(new Pessoa(codigo))) {
+                System.out.println("Codigo ja existente");
+            } else {
+                String nome = Keyboard.readString("Entrar com o nome: ");
+                int idade = Keyboard.readInt("Entrar com a idade: ");
+                float salario = Keyboard.readFloat("Entrar com o sal�rio: ");
+                novaPessoa = new Pessoa(codigo, nome, idade, salario);
+                ChaveValor<Integer, SkipList<Pessoa>> cvIdade = hmIdadePessoas.getChaveValor(idade);
+                ChaveValor<Float, SkipList<Pessoa>> cvSalario = hmSalPessoas.getChaveValor(salario);
+                if (cvIdade != null) {
+                    cvIdade.getValor().add(novaPessoa);
+                } else {
+                    hmIdadePessoas.put(idade, new SkipList<Pessoa>(10));
+                }
+                if (cvSalario != null) {
+                    cvSalario.getValor().add(novaPessoa);
+                } else {
+                    hmSalPessoas.put(salario, new SkipList<Pessoa>(10));
+                }
+                leoPessoas.add(novaPessoa);
+                System.out.println("Pessoa cadastrada.");
+            }
+            resp = Keyboard.readChar("Outra inclusao (s/n)? ");
+        } while (resp == 's');
+    }
+
+    private static void incluirPessoa(int codigo, String nome, int idade,
+            float salario) {
+        Pessoa novaPessoa;
+        if (leoPessoas.contains(new Pessoa(codigo))) {
+            return;
+        } else {
+            novaPessoa = new Pessoa(codigo, nome, idade, salario);
+            ChaveValor<Integer, SkipList<Pessoa>> cvIdade = hmIdadePessoas.getChaveValor(idade);
+            ChaveValor<Float, SkipList<Pessoa>> cvSalario = hmSalPessoas.getChaveValor(salario);
+            if (cvIdade != null) {
+                cvIdade.getValor().add(novaPessoa);
+            } else {
+                hmIdadePessoas.put(idade, new SkipList<Pessoa>(10));
+            }
+            if (cvSalario != null) {
+                cvSalario.getValor().add(novaPessoa);
+            } else {
+                hmSalPessoas.put(salario, new SkipList<Pessoa>(10));
+            }
+            leoPessoas.add(novaPessoa);
+        }
+    }
+}

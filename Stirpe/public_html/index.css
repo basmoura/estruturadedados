@@ -1,0 +1,92 @@
+body {
+    background:url(images/bkg-white.png);
+    background:repeat(repeat);
+}
+
+@font-face {
+    font-family: Rockwell; src: url('fonts/Rockwell.ttf');
+}
+
+@font-face {
+    font-family: Pixel; src: url('fonts/pixel.ttf');
+}
+
+.fonte-login {
+    font-family: Rockwell, sans-serif;
+    font-size: 25px;
+    color:#000000;
+}
+
+.fonte-titulo-login {
+    font-family: Rockwell, sans-serif;
+    font-size: 25px;
+    color:#FFFFFF;
+}
+
+a:link {
+    text-decoration: none;
+    text-decoration-line: underline;
+}
+
+a:hover{
+    color: darkred;
+}
+
+.fonte-entrar {
+    font-family: Pixel, sans-serif;
+    font-size: 28px;
+    color: #000000;
+    font-weight: bolder;
+}
+
+#fonte {
+    font-family: Rockwell, sans-serif;
+    font-size: 22px;
+    color:#000000;
+}
+
+#header {
+    width:100%;
+    margin:0px auto;
+    text-align: right;
+}
+
+#teste {  
+    position:absolute; 
+    top:50%; 
+    width: 400px;
+    margin-top:-120px;
+}
+
+#divCenter {
+    margin-left:auto;
+    margin-right:auto;
+    width:23%;
+}
+
+div.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16%;
+}
+
+div.center > div.login {
+    background-image: url(images/bkg-login.png);
+    background-repeat: no-repeat;
+    width: 374px;
+    height: 237px;
+}
+
+input.login {
+    background: url(images/bkg-textbox.png) no-repeat;
+    background-color: transparent;
+    border: 0;
+    padding: 10px;
+    width: 334px;
+    height: 34px;
+    font-family: Rockwell, sans-serif;
+    font-size: 16px;
+    color: #555555;
+    outline: none;
+}
